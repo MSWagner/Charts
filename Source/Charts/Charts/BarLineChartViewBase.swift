@@ -25,6 +25,9 @@ open class BarLineChartViewBase: ChartViewBase, BarLineScatterCandleBubbleChartD
     
     /// flag that indicates if auto scaling on the y axis is enabled
     private var _autoScaleMinMaxEnabled = false
+
+    /// flag that indicates if auto scaling on the y axis is enabled, but updated on the touch end event
+    private var _autoScaleMinMaxOnTouchEndEnabled = false
     
     private var _pinchZoomEnabled = false
     private var _doubleTapToZoomEnabled = true
@@ -785,6 +788,13 @@ open class BarLineChartViewBase: ChartViewBase, BarLineScatterCandleBubbleChartD
             {
                 _outerScrollView?.nsuiIsScrollEnabled = true
                 _outerScrollView = nil
+            }
+        } else if recognizer.state == NSUIGestureRecognizerState.ended
+        {
+            if _autoScaleMinMaxOnTouchEndEnabled
+            {
+                autoScale()
+                setNeedsDisplay()
             }
         }
     }
@@ -1805,7 +1815,22 @@ open class BarLineChartViewBase: ChartViewBase, BarLineScatterCandleBubbleChartD
     /// **default**: false
     /// - returns: `true` if auto scaling on the y axis is enabled.
     @objc open var isAutoScaleMinMaxEnabled : Bool { return autoScaleMinMaxEnabled }
-    
+
+    /// flag that indicates if auto scaling on the y axis is enabled.
+    /// if yes, the y axis automatically adjusts to the min and max y values of the current x axis range whenever a touch event ends
+    @objc open var autoScaleMinMaxOnTouchEndEnabled: Bool
+    {
+        get { return _autoScaleMinMaxOnTouchEndEnabled }
+        set { _autoScaleMinMaxOnTouchEndEnabled = newValue }
+    }
+
+    /// **default**: false
+    /// - returns: `true` if auto scaling on the y axis is enabled on touch end events.
+    @objc open var isAutoScaleMinMaxOnTouchEndEnabled : Bool
+    {
+        return autoScaleMinMaxOnTouchEndEnabled
+    }
+
     /// Sets a minimum width to the specified y axis.
     @objc open func setYAxisMinWidth(_ axis: YAxis.AxisDependency, width: CGFloat)
     {
