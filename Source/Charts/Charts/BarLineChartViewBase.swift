@@ -31,6 +31,12 @@ open class BarLineChartViewBase: ChartViewBase, BarLineScatterCandleBubbleChartD
 
     /// flat that indicates if auto scaling on the y axis only trigger if some y value is higher then the max/min yAxis values
     private var _autoScaleOnlyIfNecessary = false
+
+    /// threshold factor for the difference between the highest visible value and the yMax value of the leftAxis  (only works together with enabled _autoScaleOnlyIfNecessary)
+    private var _autoScaleMaxDifference: Double = 1
+
+    /// threshold factor for the min difference between the lowest visible value and the yMin value of the leftAxis  (only works together with enabled _autoScaleOnlyIfNecessary)
+    private var _autoScaleMinDifference: Double = 1
     
     private var _pinchZoomEnabled = false
     private var _doubleTapToZoomEnabled = true
@@ -305,11 +311,14 @@ open class BarLineChartViewBase: ChartViewBase, BarLineScatterCandleBubbleChartD
             let minVisibleY = visibleMinMaxY[0]
             let maxVisibleY = visibleMinMaxY[1]
 
-            if !(minVisibleY < leftAxis.axisMinimum || maxVisibleY > leftAxis.axisMaximum) {
+            let yMinThreshold = leftAxis.axisMinimum + (minVisibleY * _autoScaleMinDifference)
+            let yMaxThreshold = leftAxis.axisMaximum - (maxVisibleY * _autoScaleMaxDifference)
+
+            if !(minVisibleY < yMinThreshold || maxVisibleY > yMaxThreshold ) {
                 return
             }
         }
-        
+
         data.calcMinMaxY(fromX: self.lowestVisibleX, toX: self.highestVisibleX)
         
         _xAxis.calculate(min: data.xMin, max: data.xMax)
@@ -1859,9 +1868,27 @@ open class BarLineChartViewBase: ChartViewBase, BarLineScatterCandleBubbleChartD
     /// flag that indicates if auto scaling on the y axis will only trigger if necessary.
     /// if yes, the y axis automatically adjusts to the min and max y values of the current x axis range whenever isAutoScaleMinMaxEnabled or autoScaleMinMaxOnTouchEndEnabled is enabled and some visible values are higher/lower then the yAxis min/max values
     @objc open var autoScaleOnlyIfNecessary: Bool
-        {
+    {
         get { return _autoScaleOnlyIfNecessary }
         set { _autoScaleOnlyIfNecessary = newValue }
+    }
+
+    /// **default**: 1 (no effect)
+    /// threshold factor for the min difference between the highest visible value and the yMax value of the leftAxis  (only works together with enabled _autoScaleOnlyIfNecessary)
+    /// threshold factor of 2 means your leftAxes max value can be the double of your visibleY value, until autoScale fire
+    @objc open var autoScaleMaxDifference: Double
+    {
+        get { return _autoScaleMaxDifference }
+        set { _autoScaleMaxDifference = newValue }
+    }
+
+    /// **default**: 1 (no effect)
+    /// threshold factor for the min difference between the highest visible value and the yMin value of the leftAxis  (only works together with enabled _autoScaleOnlyIfNecessary)
+    /// threshold factor of 2 means your leftAxes min value can be the double of your visibleY value, until autoScale fire
+    @objc open var autoScaleMinDifference: Double
+        {
+        get { return _autoScaleMinDifference }
+        set { _autoScaleMinDifference = newValue }
     }
 
     /// Sets a minimum width to the specified y axis.
