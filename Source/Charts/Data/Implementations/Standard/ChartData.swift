@@ -56,6 +56,38 @@ open class ChartData: NSObject
     {
         calcMinMax()
     }
+
+    open func getMinMaxY(fromX: Double, toX: Double) -> [Double]?
+    {
+        var yMin: Double? = nil
+        var yMax: Double? = nil
+
+        _dataSets.forEach { set in
+            if let minMaxY = set.getMinMaxY(fromX: fromX, toX: toX) {
+                let newMinY = minMaxY[0]
+                let newMaxY = minMaxY[1]
+
+                if yMin == nil || yMax == nil
+                {
+                    yMin = newMinY
+                    yMax = newMaxY
+                }
+
+                if newMinY < yMin!
+                {
+                    yMin = newMinY
+                }
+                if newMaxY > yMax!
+                {
+                    yMax = newMaxY
+                }
+            }
+        }
+
+        guard let yMinUnWrapped = yMin, let yMaxUnWrapped = yMax else { return nil }
+
+        return [yMinUnWrapped, yMaxUnWrapped]
+    }
     
     @objc open func calcMinMaxY(fromX: Double, toX: Double)
     {

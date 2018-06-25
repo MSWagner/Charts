@@ -42,6 +42,11 @@ open class ChartBaseDataSet: NSObject, IChartDataSet
     {
         calcMinMax()
     }
+
+    open func getMinMaxY(fromX: Double, toX: Double) -> [Double]?
+    {
+        fatalError("getMinMaxY is not implemented in ChartBaseDataSet")
+    }
     
     open func calcMinMax()
     {

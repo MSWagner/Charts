@@ -19,6 +19,9 @@ public protocol IChartDataSet
     
     /// Use this method to tell the data set that the underlying data has changed
     func notifyDataSetChanged()
+
+    /// Get the minimum and maximum y values between the x values fromX and toX
+    func getMinMaxY(fromX: Double, toX: Double) -> [Double]?
     
     /// Calculates the minimum and maximum x and y values (_xMin, _xMax, _yMin, _yMax).
     func calcMinMax()

@@ -28,6 +28,9 @@ open class BarLineChartViewBase: ChartViewBase, BarLineScatterCandleBubbleChartD
 
     /// flag that indicates if auto scaling on the y axis is enabled, but updated on the touch end event
     private var _autoScaleMinMaxOnTouchEndEnabled = false
+
+    /// flat that indicates if auto scaling on the y axis only trigger if some y value is higher then the max/min yAxis values
+    private var _autoScaleOnlyIfNecessary = false
     
     private var _pinchZoomEnabled = false
     private var _doubleTapToZoomEnabled = true
@@ -291,6 +294,21 @@ open class BarLineChartViewBase: ChartViewBase, BarLineScatterCandleBubbleChartD
     {
         guard let data = _data
             else { return }
+
+        if _autoScaleOnlyIfNecessary
+        {
+            guard let visibleMinMaxY = data.getMinMaxY(fromX: self.lowestVisibleX, toX: self.highestVisibleX) else
+            {
+                return
+            }
+
+            let minVisibleY = visibleMinMaxY[0]
+            let maxVisibleY = visibleMinMaxY[1]
+
+            if !(minVisibleY < leftAxis.axisMinimum || maxVisibleY > leftAxis.axisMaximum) {
+                return
+            }
+        }
         
         data.calcMinMaxY(fromX: self.lowestVisibleX, toX: self.highestVisibleX)
         
@@ -790,7 +808,8 @@ open class BarLineChartViewBase: ChartViewBase, BarLineScatterCandleBubbleChartD
                 _outerScrollView = nil
             }
 
-            if recognizer.state == NSUIGestureRecognizerState.ended && _autoScaleMinMaxOnTouchEndEnabled {
+            if recognizer.state == NSUIGestureRecognizerState.ended && _autoScaleMinMaxOnTouchEndEnabled
+            {
                 autoScale()
                 setNeedsDisplay()
             }
@@ -1828,6 +1847,21 @@ open class BarLineChartViewBase: ChartViewBase, BarLineScatterCandleBubbleChartD
     @objc open var isAutoScaleMinMaxOnTouchEndEnabled : Bool
     {
         return autoScaleMinMaxOnTouchEndEnabled
+    }
+
+    /// **default**: false
+    /// - returns: `true` if auto scaling on the y axis will only trigger if necessary.
+    @objc open var isAutoScaleOnlyIfNecessary : Bool
+    {
+        return autoScaleOnlyIfNecessary
+    }
+
+    /// flag that indicates if auto scaling on the y axis will only trigger if necessary.
+    /// if yes, the y axis automatically adjusts to the min and max y values of the current x axis range whenever isAutoScaleMinMaxEnabled or autoScaleMinMaxOnTouchEndEnabled is enabled and some visible values are higher/lower then the yAxis min/max values
+    @objc open var autoScaleOnlyIfNecessary: Bool
+        {
+        get { return _autoScaleOnlyIfNecessary }
+        set { _autoScaleOnlyIfNecessary = newValue }
     }
 
     /// Sets a minimum width to the specified y axis.
