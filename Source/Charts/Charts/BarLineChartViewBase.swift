@@ -311,10 +311,11 @@ open class BarLineChartViewBase: ChartViewBase, BarLineScatterCandleBubbleChartD
             let minVisibleY = visibleMinMaxY[0]
             let maxVisibleY = visibleMinMaxY[1]
 
-            let yMinThreshold = leftAxis.axisMinimum + (minVisibleY * _autoScaleMinDifference)
-            let yMaxThreshold = leftAxis.axisMaximum - (maxVisibleY * _autoScaleMaxDifference)
-
-            if !(minVisibleY < yMinThreshold || maxVisibleY > yMaxThreshold ) {
+            if !(leftAxis.axisMinimum > minVisibleY
+                || leftAxis.axisMaximum < maxVisibleY
+                || leftAxis.axisMinimum < minVisibleY * _autoScaleMinDifference
+                || leftAxis.axisMaximum > maxVisibleY * _autoScaleMaxDifference)
+            {
                 return
             }
         }
