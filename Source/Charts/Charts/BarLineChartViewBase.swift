@@ -33,10 +33,10 @@ open class BarLineChartViewBase: ChartViewBase, BarLineScatterCandleBubbleChartD
     private var _autoScaleOnlyIfNecessary = false
 
     /// threshold factor for the difference between the highest visible value and the yMax value of the leftAxis  (only works together with enabled _autoScaleOnlyIfNecessary)
-    private var _autoScaleMaxDifference: Double = 1
+    private var _autoScaleMaxDifference: Double = 2
 
     /// threshold factor for the min difference between the lowest visible value and the yMin value of the leftAxis  (only works together with enabled _autoScaleOnlyIfNecessary)
-    private var _autoScaleMinDifference: Double = 1
+    private var _autoScaleMinDifference: Double = 2
     
     private var _pinchZoomEnabled = false
     private var _doubleTapToZoomEnabled = true
@@ -313,11 +313,12 @@ open class BarLineChartViewBase: ChartViewBase, BarLineScatterCandleBubbleChartD
 
             if !(leftAxis.axisMinimum > minVisibleY
                 || leftAxis.axisMaximum < maxVisibleY
-                || leftAxis.axisMinimum < minVisibleY * _autoScaleMinDifference
-                || leftAxis.axisMaximum > maxVisibleY * _autoScaleMaxDifference)
+                || (_autoScaleMinDifference != 1 && leftAxis.axisMinimum < minVisibleY * _autoScaleMinDifference)
+                || (_autoScaleMaxDifference != 1 && leftAxis.axisMaximum > maxVisibleY * _autoScaleMaxDifference))
             {
                 return
             }
+
         }
 
         data.calcMinMaxY(fromX: self.lowestVisibleX, toX: self.highestVisibleX)
@@ -1874,7 +1875,7 @@ open class BarLineChartViewBase: ChartViewBase, BarLineScatterCandleBubbleChartD
         set { _autoScaleOnlyIfNecessary = newValue }
     }
 
-    /// **default**: 1 (no effect)
+    /// **default**: 2 (leftAxisMax <= 2 * maxVisibleY)
     /// threshold factor for the min difference between the highest visible value and the yMax value of the leftAxis  (only works together with enabled _autoScaleOnlyIfNecessary)
     /// threshold factor of 2 means your leftAxes max value can be the double of your visibleY value, until autoScale fire
     @objc open var autoScaleMaxDifference: Double
@@ -1883,7 +1884,7 @@ open class BarLineChartViewBase: ChartViewBase, BarLineScatterCandleBubbleChartD
         set { _autoScaleMaxDifference = newValue }
     }
 
-    /// **default**: 1 (no effect)
+    /// **default**: 2 (leftAxisMin >= 2 * minVisibleY)
     /// threshold factor for the min difference between the highest visible value and the yMin value of the leftAxis  (only works together with enabled _autoScaleOnlyIfNecessary)
     /// threshold factor of 2 means your leftAxes min value can be the double of your visibleY value, until autoScale fire
     @objc open var autoScaleMinDifference: Double
