@@ -789,13 +789,12 @@ open class BarLineChartViewBase: ChartViewBase, BarLineScatterCandleBubbleChartD
                 _outerScrollView?.nsuiIsScrollEnabled = true
                 _outerScrollView = nil
             }
-        } else if recognizer.state == NSUIGestureRecognizerState.ended
-        {
-            if _autoScaleMinMaxOnTouchEndEnabled
-            {
+
+            if recognizer.state == NSUIGestureRecognizerState.ended && _autoScaleMinMaxOnTouchEndEnabled {
                 autoScale()
                 setNeedsDisplay()
             }
+
         }
     }
     
