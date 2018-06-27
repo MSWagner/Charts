@@ -32,11 +32,13 @@ open class BarLineChartViewBase: ChartViewBase, BarLineScatterCandleBubbleChartD
     /// flat that indicates if auto scaling on the y axis only trigger if some y value is higher then the max/min yAxis values
     private var _autoScaleOnlyIfNecessary = false
 
-    /// threshold factor for the difference between the highest visible value and the yMax value of the leftAxis  (only works together with enabled _autoScaleOnlyIfNecessary)
-    private var _autoScaleMaxDifference: Double = 2
+    /** factor of how much the difference (axisMaximum - highestVisibleY) and the highestVisibleY or (axisMinimum - lowestVisibleY) and the lowestVisibleY can differ (only works together with enabled _autoScaleOnlyIfNecessary)
 
-    /// threshold factor for the min difference between the lowest visible value and the yMin value of the leftAxis  (only works together with enabled _autoScaleOnlyIfNecessary)
-    private var _autoScaleMinDifference: Double = 2
+        Enable autoScale if
+        abs(axisMaximum - highestVisibleY) > abs(highestVisibleY * factor) ||
+        abs(axisMinimum - lowestVisibleY) > abs(lowestVisibleY * factor)
+    */
+    private var _autoScaleDifferenceFactor: Double = 1
     
     private var _pinchZoomEnabled = false
     private var _doubleTapToZoomEnabled = true
@@ -311,14 +313,22 @@ open class BarLineChartViewBase: ChartViewBase, BarLineScatterCandleBubbleChartD
             let minVisibleY = visibleMinMaxY[0]
             let maxVisibleY = visibleMinMaxY[1]
 
-            if !(leftAxis.axisMinimum > minVisibleY
-                || leftAxis.axisMaximum < maxVisibleY
-                || (_autoScaleMinDifference != 1 && leftAxis.axisMinimum < minVisibleY * _autoScaleMinDifference)
-                || (_autoScaleMaxDifference != 1 && leftAxis.axisMaximum > maxVisibleY * _autoScaleMaxDifference))
-            {
-                return
-            }
+            let leftMaximum = leftAxis.axisMaximum
+            let leftMinimum = leftAxis.axisMinimum
 
+            let minDiffFactor = autoScaleDifferenceFactor
+
+            if !(leftMinimum > minVisibleY || leftMaximum < maxVisibleY)
+            {
+                let topDifference = abs(leftMaximum - maxVisibleY)
+                let bottomDifference = abs(leftMinimum - minVisibleY)
+
+                if !((bottomDifference > abs(minVisibleY * minDiffFactor))
+                    || (topDifference > abs(maxVisibleY * minDiffFactor)))
+                {
+                    return
+                }
+            }
         }
 
         data.calcMinMaxY(fromX: self.lowestVisibleX, toX: self.highestVisibleX)
@@ -1875,22 +1885,17 @@ open class BarLineChartViewBase: ChartViewBase, BarLineScatterCandleBubbleChartD
         set { _autoScaleOnlyIfNecessary = newValue }
     }
 
-    /// **default**: 2 (leftAxisMax <= 2 * maxVisibleY)
-    /// threshold factor for the min difference between the highest visible value and the yMax value of the leftAxis  (only works together with enabled _autoScaleOnlyIfNecessary)
-    /// threshold factor of 2 means your leftAxes max value can be the double of your visibleY value, until autoScale fire
-    @objc open var autoScaleMaxDifference: Double
-    {
-        get { return _autoScaleMaxDifference }
-        set { _autoScaleMaxDifference = newValue }
-    }
+    /// **default**: 1
+    /** factor of how much the difference (axisMaximum - highestVisibleY) and the highestVisibleY or (axisMinimum - lowestVisibleY) and the lowestVisibleY can differ (only works together with enabled _autoScaleOnlyIfNecessary)
 
-    /// **default**: 2 (leftAxisMin >= 2 * minVisibleY)
-    /// threshold factor for the min difference between the highest visible value and the yMin value of the leftAxis  (only works together with enabled _autoScaleOnlyIfNecessary)
-    /// threshold factor of 2 means your leftAxes min value can be the double of your visibleY value, until autoScale fire
-    @objc open var autoScaleMinDifference: Double
-        {
-        get { return _autoScaleMinDifference }
-        set { _autoScaleMinDifference = newValue }
+     Enable autoScale if
+     abs(axisMaximum - highestVisibleY) > abs(highestVisibleY * factor) ||
+     abs(axisMinimum - lowestVisibleY) > abs(lowestVisibleY * factor)
+     */
+    @objc open var autoScaleDifferenceFactor: Double
+    {
+        get { return _autoScaleDifferenceFactor }
+        set { _autoScaleDifferenceFactor = newValue }
     }
 
     /// Sets a minimum width to the specified y axis.
