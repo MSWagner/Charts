@@ -75,8 +75,7 @@ class PositiveNegativeBarChartViewController: DemoBaseViewController {
 
         chartView.autoScaleMinMaxOnTouchEndEnabled = true
         chartView.autoScaleOnlyIfNecessary = true
-        chartView.autoScaleMaxDifference = 1
-        chartView.autoScaleMinDifference = 1
+        chartView.autoScaleDifferenceFactor = 1
         
         self.updateChartData()
     }
