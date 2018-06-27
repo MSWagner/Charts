@@ -39,7 +39,7 @@ class PositiveNegativeBarChartViewController: DemoBaseViewController {
         
         chartView.delegate = self
         
-        chartView.setExtraOffsets(left: 70, top: -30, right: 70, bottom: 10)
+        chartView.setExtraOffsets(left: 0, top: -30, right: 0, bottom: 10)
     
         chartView.drawBarShadowEnabled = false
         chartView.drawValueAboveBarEnabled = true
@@ -47,6 +47,10 @@ class PositiveNegativeBarChartViewController: DemoBaseViewController {
         chartView.chartDescription?.enabled = false
         
         chartView.rightAxis.enabled = false
+
+        chartView.scaleYEnabled = false
+        chartView.dragYEnabled = false
+        chartView.dragDecelerationEnabled = false
 
         let xAxis = chartView.xAxis
         xAxis.labelPosition = .bottom
@@ -66,6 +70,13 @@ class PositiveNegativeBarChartViewController: DemoBaseViewController {
         leftAxis.drawZeroLineEnabled = true
         leftAxis.zeroLineColor = .gray
         leftAxis.zeroLineWidth = 0.7
+
+        /// Autoscale if necessary
+
+        chartView.autoScaleMinMaxOnTouchEndEnabled = true
+        chartView.autoScaleOnlyIfNecessary = true
+        chartView.autoScaleMaxDifference = 1
+        chartView.autoScaleMinDifference = 1
         
         self.updateChartData()
     }
@@ -80,13 +91,26 @@ class PositiveNegativeBarChartViewController: DemoBaseViewController {
     }
     
     func setChartData() {
-        let yVals = [BarChartDataEntry(x: 0, y: -224.1),
-                     BarChartDataEntry(x: 1, y: 238.5),
-                     BarChartDataEntry(x: 2, y: 1280.1),
-                     BarChartDataEntry(x: 3, y: -442.3),
-                     BarChartDataEntry(x: 4, y: -2280.1)
-        ]
-        
+
+        let start = 0
+        let count = 100
+        let range: UInt32 = 50000
+
+        let yVals = (start..<start+count+1).map { (i) -> BarChartDataEntry in
+            let mult = range + 1
+            let val = Double(arc4random_uniform(mult))
+
+            return BarChartDataEntry(x: Double(i), y: val)
+        }
+
+        let negativVals = (start..<start+count+1).map { (i) -> BarChartDataEntry in
+            let mult = range + 1
+            let val = Double(arc4random_uniform(mult))
+
+            return BarChartDataEntry(x: Double(i), y: -val)
+        }
+    
+
         let red = UIColor(red: 211/255, green: 74/255, blue: 88/255, alpha: 1)
         let green = UIColor(red: 110/255, green: 190/255, blue: 102/255, alpha: 1)
         let colors = yVals.map { (entry) -> NSUIColor in
@@ -96,8 +120,12 @@ class PositiveNegativeBarChartViewController: DemoBaseViewController {
         let set = BarChartDataSet(values: yVals, label: "Values")
         set.colors = colors
         set.valueColors = colors
+
+        let set2 = BarChartDataSet(values: negativVals, label: "Values")
+        set2.colors = colors
+        set2.valueColors = colors
         
-        let data = BarChartData(dataSet: set)
+        let data = BarChartData(dataSets: [set, set2])
         data.setValueFont(.systemFont(ofSize: 13))
         
         let formatter = NumberFormatter()
